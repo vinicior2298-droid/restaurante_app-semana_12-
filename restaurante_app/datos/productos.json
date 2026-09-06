@@ -1,0 +1,23 @@
+[
+    {
+        "codigo": "L001",
+        "nombre": "Pizza Margarita",
+        "categoria": "Comida Rápida",
+        "precio": 5.0,
+        "stock": 8
+    },
+    {
+        "codigo": "L002",
+        "nombre": "Encebollado",
+        "categoria": "Comida Típica",
+        "precio": 4.5,
+        "stock": 7
+    },
+    {
+        "codigo": "L003",
+        "nombre": "Jugo De Maracuyá",
+        "categoria": "Jugos",
+        "precio": 1.5,
+        "stock": 7
+    }
+]
