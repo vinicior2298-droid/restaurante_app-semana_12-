@@ -1,14 +1,12 @@
 [
     {
         "identificacion": "0302895354",
-        "nombre": "Richard Vinicio"
+        "nombre": "Richard Morocho",
+        "contraseña": "Roswell98"
     },
     {
         "identificacion": "0107105884",
-        "nombre": "Ruth Jimena"
-    },
-    {
-        "identificacion": "0309876523",
-        "nombre": "Joffre Steve"
+        "nombre": "Ruth Marca",
+        "contraseña": "Ruthmar9"
     }
 ]

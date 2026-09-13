@@ -3,7 +3,7 @@ from modelos.usuario import Usuario
 from modelos.venta import Venta
 
 
-class Restaurante:
+class RestauranteServicio:
 
     def __init__(
         self,
@@ -111,14 +111,16 @@ class Restaurante:
         self,
         identificacion: str,
         nuevo_nombre: str,
+        nueva_contraseña: str 
     ) -> bool:
         usuario = self.buscar_usuario(identificacion)
 
         if usuario is None:
             return False
 
-        usuario.nombre = nuevo_nombre
-        return True
+        usuario.nombre = nuevo_nombre 
+        usuario.contraseña = nueva_contraseña 
+        return True 
 
     def eliminar_usuario(
         self,
