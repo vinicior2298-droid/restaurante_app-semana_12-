@@ -1,61 +1,111 @@
-from pathlib import Path
 import json
-from modelos.usuario import Usuario
+from pathlib import Path
 from modelos.producto import Producto
+from modelos.usuario import Usuario
 from modelos.venta import Venta
+
 
 class ArchivoServicio:
 
-    def __init__(self, carpeta_datos: str = "restaurante_app/datos") -> None:
-        self.carpeta = Path(carpeta_datos)
+  def __init__(self, carpeta_datos: str = "datos") -> None:
+    base_dir = Path(__file__).resolve().parent.parent
+    self.carpeta = base_dir / carpeta_datos
 
-        self.carpeta.mkdir(
-            parents=True,
-            exist_ok=True
-        )
+    self.carpeta.mkdir(parents=True, exist_ok=True)
 
-        self.archivo_productos = self.carpeta / "productos.json"
-        self.archivo_usuarios = self.carpeta / "usuarios.json"
-        self.archivo_ventas = self.carpeta / "ventas.json"
+    self.archivo_productos = self.carpeta / "productos.json"
+    self.archivo_usuarios = self.carpeta / "usuarios.json"
+    self.archivo_ventas = self.carpeta / "ventas.json"
 
-    def cargar_usuarios(self) -> list[Usuario]:
-        print("Ruta buscada:", self.archivo_usuarios)
-        print("¿Existe el archivo?", self.archivo_usuarios.exists())
+  def cargar_usuarios(self) -> list[Usuario]:
+    if not self.archivo_usuarios.exists():
+      return []
 
-        if not self.archivo_usuarios.exists():
-            return []
+    try:
+      with self.archivo_usuarios.open("r", encoding="utf-8") as archivo:
+        datos = json.load(archivo)
 
+      usuarios = []
+      for registro in datos:
         try:
-            with self.archivo_usuarios.open("r", encoding="utf-8") as archivo:
-                datos = json.load(archivo)
+          usuario = Usuario(
+              registro["identificacion"],
+              registro["nombre"],
+              registro["contraseña"],
+          )
+          usuarios.append(usuario)
+        except (KeyError, ValueError):
+          continue
+      return usuarios
+    except (FileNotFoundError, json.JSONDecodeError, PermissionError):
+      return []
 
-            print("Usuarios cargados:", datos)
+  def cargar_productos(self) -> list[Producto]:
+    if not self.archivo_productos.exists():
+      return []
 
-            usuarios = []
-            for registro in datos:
-                try:
-                    usuario = Usuario(
-                        registro["identificacion"],
-                        registro["nombre"],
-                        registro["contraseña"]  # ojo: debe estar escrito con ñ en el JSON
-                    )
-                    usuarios.append(usuario)
-                except (KeyError, ValueError) as e:
-                    print("Error al procesar registro:", registro, e)
-                    continue
+    try:
+      with self.archivo_productos.open("r", encoding="utf-8") as archivo:
+        datos = json.load(archivo)
 
-            return usuarios
+      productos = []
+      for reg in datos:
+        try:
+          prod = Producto(
+              reg["codigo"],
+              reg["nombre"],
+              reg["categoria"],
+              float(reg["precio"]),
+              int(reg["stock"]),
+          )
+          productos.append(prod)
+        except (KeyError, ValueError):
+          continue
+      return productos
+    except (FileNotFoundError, json.JSONDecodeError, PermissionError):
+      return []
 
-        except (FileNotFoundError, json.JSONDecodeError, PermissionError) as e:
-            print("Error al abrir archivo:", e)
-            return []
+  def cargar_ventas(self) -> list[Venta]:
+    if not self.archivo_ventas.exists():
+      return []
 
-    def validar_acceso(self, identificacion: str, contraseña: str) -> Usuario | None:
-        usuarios = self.cargar_usuarios()
+    try:
+      with self.archivo_ventas.open("r", encoding="utf-8") as archivo:
+        datos = json.load(archivo)
 
-        for u in usuarios:
-            print("Comparando con:", u.identificacion, u.contraseña)  # depuración
-            if u.identificacion == identificacion and u.contraseña == contraseña:
-                return u
+      ventas = []
+      for reg in datos:
+        try:
+          v = Venta(
+              reg["usuario_id"], reg["producto_codigo"], int(reg["cantidad"])
+          )
+          ventas.append(v)
+        except (KeyError, ValueError):
+          continue
+      return ventas
+    except (FileNotFoundError, json.JSONDecodeError, PermissionError):
+      return []
 
-        return None
+  def guardar_usuarios(self, usuarios: list[Usuario]) -> None:
+    datos = [u.to_dict() for u in usuarios]
+    with self.archivo_usuarios.open("w", encoding="utf-8") as archivo:
+      json.dump(datos, archivo, indent=4, ensure_ascii=False)
+
+  def guardar_productos(self, productos: list[Producto]) -> None:
+    datos = [p.to_dict() for p in productos]
+    with self.archivo_productos.open("w", encoding="utf-8") as archivo:
+      json.dump(datos, archivo, indent=4, ensure_ascii=False)
+
+  def guardar_ventas(self, ventas: list[Venta]) -> None:
+    datos = [v.to_dict() for v in ventas]
+    with self.archivo_ventas.open("w", encoding="utf-8") as archivo:
+      json.dump(datos, archivo, indent=4, ensure_ascii=False)
+
+  def validar_acceso(
+      self, identificacion: str, contraseña: str
+  ) -> Usuario | None:
+    usuarios = self.cargar_usuarios()
+    for u in usuarios:
+      if u.identificacion == identificacion and u.contraseña == contraseña:
+        return u
+    return None

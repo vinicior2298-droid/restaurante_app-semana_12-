@@ -6,7 +6,7 @@ class Producto:
         nombre: str,
         categoria: str,
         precio: float,
-        stock: int
+        stock: int = 0
     ) -> None:
         self.codigo = self.validar_codigo(codigo)
         self.nombre = self.validar_nombre(nombre)
@@ -16,52 +16,44 @@ class Producto:
 
     @staticmethod
     def validar_codigo(codigo: str) -> str:
-        codigo = codigo.strip()
-
+        codigo = str(codigo).strip()
         if not codigo:
             raise ValueError("El código no puede estar vacío.")
-
         return codigo.upper()
 
     @staticmethod
     def validar_nombre(nombre: str) -> str:
-        nombre = nombre.strip()
-
+        nombre = str(nombre).strip()
         if not nombre:
             raise ValueError("El nombre no puede estar vacío.")
-
         return nombre.title()
 
     @staticmethod
     def validar_categoria(categoria: str) -> str:
-        categoria = categoria.strip()
-
+        categoria = str(categoria).strip()
         if not categoria:
             raise ValueError("La categoría no puede estar vacía.")
-
         return categoria.title()
 
     @staticmethod
     def validar_precio(precio: float) -> float:
+        precio = float(precio)
         if precio <= 0:
             raise ValueError("El precio debe ser mayor que cero.")
-
         return precio
 
     @staticmethod
     def validar_stock(stock: int) -> int:
+        stock = int(stock)
         if stock < 0:
             raise ValueError("El stock no puede ser negativo.")
-
         return stock
 
     def vender(self, cantidad: int) -> None:
         if cantidad <= 0:
             raise ValueError("La cantidad debe ser mayor que cero.")
-
         if cantidad > self.stock:
             raise ValueError("Stock insuficiente.")
-
         self.stock -= cantidad
 
     def to_dict(self) -> dict:

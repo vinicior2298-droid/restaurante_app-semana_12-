@@ -1,216 +1,56 @@
 from modelos.producto import Producto
 from modelos.usuario import Usuario
-from modelos.venta import Venta
-
 
 class RestauranteServicio:
+    def __init__(self, archivo_servicio):
+        self.archivo_servicio = archivo_servicio
+        self.productos = self.archivo_servicio.cargar_productos()
+        self.usuarios = self.archivo_servicio.cargar_usuarios()
 
-    def __init__(
-        self,
-        productos_iniciales: list[Producto] | None = None,
-        usuarios_iniciales: list[Usuario] | None = None,
-        ventas_iniciales: list[Venta] | None = None,
-    ) -> None:
-        self._productos: list[Producto] = (
-            productos_iniciales.copy()
-            if productos_iniciales
-            else []
-        )
+    def autenticar(self, identificacion, contraseña):
+        return self.archivo_servicio.validar_acceso(identificacion, contraseña)
 
-        self._usuarios: list[Usuario] = (
-            usuarios_iniciales.copy()
-            if usuarios_iniciales
-            else []
-        )
+    def listar_productos(self):
+        return self.productos
 
-        self._ventas: list[Venta] = (
-            ventas_iniciales.copy()
-            if ventas_iniciales
-            else []
-        )
+    def listar_usuarios(self):
+        return self.usuarios
 
-    # ==========================
-    # PRODUCTOS
-    # ==========================
-
-    def registrar_producto(self, producto: Producto) -> bool:
-        if self.buscar_producto(producto.codigo) is not None:
-            return False
-
-        self._productos.append(producto)
-        return True
-
-    def buscar_producto(self, codigo: str) -> Producto | None:
-        codigo = codigo.strip()
-
-        for producto in self._productos:
-            if producto.codigo == codigo:
-                return producto
-
+    def obtener_producto_por_id(self, codigo):
+        for p in self.productos:
+            if str(p.codigo) == str(codigo).strip().upper():
+                return p
         return None
 
-    def actualizar_producto(
-        self,
-        codigo: str,
-        nombre: str,
-        categoria: str,
-        precio: float,
-        stock: int,
-    ) -> bool:
-        producto = self.buscar_producto(codigo)
+    def registrar_producto(self, codigo, nombre, categoria, precio, stock=0):
+        if self.obtener_producto_por_id(codigo):
+            return False, f"El código {codigo} ya está registrado."
+        try:
+            nuevo_p = Producto(codigo, nombre, categoria, precio, stock)
+            self.productos.append(nuevo_p)
+            self.archivo_servicio.guardar_productos(self.productos)
+            return True, "Producto registrado correctamente."
+        except ValueError as e:
+            return False, str(e)
 
-        if producto is None:
-            return False
+    def actualizar_producto(self, codigo, nombre, categoria, precio):
+        prod = self.obtener_producto_por_id(codigo)
+        if not prod:
+            return False, "El producto a actualizar no existe."
+        try:
+            prod.nombre = Producto.validar_nombre(nombre)
+            prod.categoria = Producto.validar_categoria(categoria)
+            prod.precio = Producto.validar_precio(precio)
+            self.archivo_servicio.guardar_productos(self.productos)
+            return True, "Producto actualizado correctamente."
+        except ValueError as e:
+            return False, str(e)
 
-        producto.nombre = Producto.validar_nombre(nombre)
-        producto.categoria = Producto.validar_categoria(categoria)
-        producto.precio = Producto.validar_precio(precio)
-        producto.stock = Producto.validar_stock(stock)
+    def eliminar_producto(self, codigo):
+        prod = self.obtener_producto_por_id(codigo)
+        if not prod:
+            return False, "El producto a eliminar no existe."
 
-        return True
-
-    def eliminar_producto(self, codigo: str) -> bool:
-        producto = self.buscar_producto(codigo)
-
-        if producto is None:
-            return False
-
-        self._productos.remove(producto)
-        return True
-
-    def listar_productos(self) -> list[Producto]:
-        return self._productos.copy()
-
-    def contar_productos(self) -> int:
-        return len(self._productos)
-
-    # ==========================
-    # USUARIOS
-    # ==========================
-
-    def registrar_usuario(self, usuario: Usuario) -> bool:
-        if self.buscar_usuario(usuario.identificacion) is not None:
-            return False
-
-        self._usuarios.append(usuario)
-        return True
-
-    def buscar_usuario(
-        self,
-        identificacion: str,
-    ) -> Usuario | None:
-        identificacion = identificacion.strip()
-
-        for usuario in self._usuarios:
-            if usuario.identificacion == identificacion:
-                return usuario
-
-        return None
-
-    def actualizar_usuario(
-        self,
-        identificacion: str,
-        nuevo_nombre: str,
-        nueva_contraseña: str 
-    ) -> bool:
-        usuario = self.buscar_usuario(identificacion)
-
-        if usuario is None:
-            return False
-
-        usuario.nombre = nuevo_nombre 
-        usuario.contraseña = nueva_contraseña 
-        return True 
-
-    def eliminar_usuario(
-        self,
-        identificacion: str,
-    ) -> bool:
-        usuario = self.buscar_usuario(identificacion)
-
-        if usuario is None:
-            return False
-
-        self._usuarios.remove(usuario)
-        return True
-
-    def listar_usuarios(self) -> list[Usuario]:
-        return self._usuarios.copy()
-
-    # ==========================
-    # VENTAS
-    # ==========================
-
-    def vender_producto(
-        self,
-        codigo_producto: str,
-        identificacion_usuario: str,
-        cantidad: int = 1,
-    ) -> bool:
-        usuario = self.buscar_usuario(
-            identificacion_usuario
-        )
-
-        producto = self.buscar_producto(
-            codigo_producto
-        )
-
-        if usuario is None or producto is None:
-            return False
-
-        if cantidad <= 0:
-            return False
-
-        if producto.stock < cantidad:
-            return False
-
-        venta = Venta(
-            usuario.identificacion,
-            producto.codigo,
-            cantidad
-        )
-
-        self._ventas.append(venta)
-        producto.vender(cantidad)
-
-        return True
-
-    def listar_ventas(self) -> list[Venta]:
-        return self._ventas.copy()
-
-    def consultar_ventas_usuario(
-        self,
-        identificacion_usuario: str,
-    ) -> list[Venta]:
-        identificacion_usuario = (
-            identificacion_usuario.strip()
-        )
-
-        ventas_usuario: list[Venta] = []
-
-        for venta in self._ventas:
-            if venta.id_usuario == identificacion_usuario:
-                ventas_usuario.append(venta)
-
-        return ventas_usuario
-
-    # ==========================
-    # CATEGORIAS
-    # ==========================
-
-    def obtener_categorias_unicas(self) -> set[str]:
-        categorias: set[str] = set()
-
-        for producto in self._productos:
-            categorias.add(producto.categoria)
-
-        return categorias
-
-    def existe_categoria(
-        self,
-        categoria: str,
-    ) -> bool:
-        return (
-            categoria.strip()
-            in self.obtener_categorias_unicas()
-        )
+        self.productos.remove(prod)
+        self.archivo_servicio.guardar_productos(self.productos)
+        return True, "Producto eliminado correctamente."

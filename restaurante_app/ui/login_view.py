@@ -1,37 +1,55 @@
 import tkinter as tk
 from tkinter import messagebox
-from servicios.archivo_servicio import ArchivoServicio
 from ui.main_view import MainView
 
 class LoginView(tk.Tk):
-    def __init__(self):
+    def __init__(self, servicio):
         super().__init__()
-        self.title("Restaurante 'Sabor de Casa'")
-        self.geometry("400x250")
-        self.configure(bg="#f0f8ff")  
-        self.archivo_servicio = ArchivoServicio()
-        
-        tk.Label(self, text="Ingreso a la plataforma", font=("Arial", 14, "bold"), bg="#f0f8ff", fg="#333").pack(pady=10)
+        self.servicio = servicio
 
-        tk.Label(self, text="Usuario", bg="#f0f8ff", fg="#333").pack()
-        self.entry_usuario = tk.Entry(self, bg="#fff", fg="#000")
-        self.entry_usuario.pack()
+        self.title("Acceso al Sistema - Restaurante")
+        self.geometry("380x300")
+        self.resizable(False, False)
+        self.config(bg="#f4f6f7")
 
-        tk.Label(self, text="Contraseña", bg="#f0f8ff", fg="#333").pack()
-        self.entry_contraseña = tk.Entry(self, show="*", bg="#fff", fg="#000")
-        self.entry_contraseña.pack()
+        self._crear_interfaz()
 
-        tk.Button(self, text="Iniciar sesión", bg="#4682b4", fg="white", font=("Arial", 10, "bold"),
-                  command=self.iniciar_sesion).pack(pady=15)
+    def _crear_interfaz(self):
+        lbl_titulo = tk.Label(
+            self, text="INICIAR SESIÓN", font=("Arial", 14, "bold"), 
+            bg="#f4f6f7", fg="#2c3e50"
+        )
+        lbl_titulo.pack(pady=15)
 
-    def iniciar_sesion(self):
-        usuario = self.entry_usuario.get()
-        contraseña = self.entry_contraseña.get()
+        frm_campos = tk.Frame(self, bg="#f4f6f7")
+        frm_campos.pack(pady=10)
 
-        usuario_validado = self.archivo_servicio.validar_acceso(usuario, contraseña)
+        tk.Label(frm_campos, text="Usuario:", font=("Arial", 10), bg="#f4f6f7").grid(row=0, column=0, sticky="e", pady=8)
+        self.ent_usuario = tk.Entry(frm_campos, font=("Arial", 10))
+        self.ent_usuario.grid(row=0, column=1, pady=8, padx=5)
 
-        if usuario_validado:
-            self.destroy()  
-            MainView(usuario_validado).mainloop()  
+        tk.Label(frm_campos, text="Contraseña:", font=("Arial", 10), bg="#f4f6f7").grid(row=1, column=0, sticky="e", pady=8)
+        self.ent_clave = tk.Entry(frm_campos, show="*", font=("Arial", 10))
+        self.ent_clave.grid(row=1, column=1, pady=8, padx=5)
+
+        btn_ingresar = tk.Button(
+            self, text="INGRESAR", command=self._validar_login, 
+            bg="#2980b9", fg="white", font=("Arial", 10, "bold"), width=15, height=1
+        )
+        btn_ingresar.pack(pady=20)
+
+    def _validar_login(self):
+        usr = self.ent_usuario.get().strip()
+        clv = self.ent_clave.get().strip()
+
+        if not usr or not clv:
+            messagebox.showwarning("Atención", "Ingrese usuario y contraseña.")
+            return
+
+        usuario_valido = self.servicio.autenticar(usr, clv)
+        if usuario_valido:
+            self.destroy()
+            app_principal = MainView(self.servicio, usuario_valido)
+            app_principal.mainloop()
         else:
-            messagebox.showerror("Error", "Credenciales incorrectas")
+            messagebox.showerror("Error de Acceso", "Credenciales incorrectas.")

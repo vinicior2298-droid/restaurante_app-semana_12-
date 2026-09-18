@@ -1,56 +1,53 @@
-# Restaurante App - "Sabor de Casa"
+# Sistema de Gestión de Restaurante - POO & Tkinter
 
-## Autor:
-Richard Vinicio Morocho Torres 
+# Autor: Richard Vinicio Morocho Torres 
 
-## Propósito
-Esta aplicación fue desarrollada como una base para gestionar un restaurante ficticio llamado **"Sabor de Casa"**.  
-Su objetivo es permitir el registro de productos, usuarios y ventas, además de ofrecer un flujo de inicio de sesión seguro y una interfaz gráfica amigable.
-
-## Estructura de carpetas y archivos
-restaurante_app/
-├── datos/
-│   ├── usuarios.json      
-│   ├── productos.json     
-│   └── ventas.json        
-├── modelos/
-│   ├── usuario.py        
-│   ├── producto.py       
-│   └── venta.py           
-├── servicios/
-│   └── archivo_servicio.py 
-├── ui/
-│   ├── login_view.py      
-│   └── main_view.py      
-└── main.py       
-
-## Flujo de la aplicación
-1. El usuario abre la aplicación ejecutando `main.py`.  
-2. Se muestra la **ventana de login** (`login_view.py`).  
-3. Si las credenciales son correctas, la ventana de login se cierra y se abre la **ventana principal** (`main_view.py`).  
-4. Desde la ventana principal se pueden realizar las siguientes acciones:
-   - Registrar producto  
-   - Registrar usuario  
-   - Ver ventas  
-   - Salir de la aplicación  
-
-## Vistas implementadas
-- **LoginView**:  
-  - Fondo azul claro, campos para usuario y contraseña.  
-  - Botón de inicio de sesión.  
-  - Validación contra el archivo `usuarios.json`.
-
-- **MainView**:  
-  - Fondo verde claro, mensaje de bienvenida con el nombre del usuario.  
-  - Botones en **horizontal** para las acciones principales.  
-  - Botón rojo para salir.
-
-## Pasos para ejecutar `main.py`
-1. Asegúrate de tener instalado **Python 3.10+**.  
-2. Verifica que los archivos `usuarios.json`, `productos.json` y `ventas.json` estén dentro de la carpeta `restaurante_app/datos`.  
-3. Abre una terminal en la carpeta del proyecto.  
-4. Ejecuta el comando:
-   ```bash
-   python restaurante_app/main.py 
+Este proyecto es una aplicación de escritorio desarrollada en **Python** empleando la librería gráfica **Tkinter**. Aplica principios de **Programación Orientada a Objetos (POO)** y la separación de responsabilidades mediante una arquitectura por capas (Modelos, Servicios e Interfaz de Usuario).
 
 
+## Características Principales
+
+* **Autenticación de Usuarios:** Sistema de inicio de sesión con validación de credenciales.
+* **Gestión de Productos (CRUD):** 
+  * Registro de nuevos productos.
+  * Consulta y búsqueda por código.
+  * Actualización de información (nombre, categoría, precio).
+  * Eliminación de productos.
+* **Persistencia de Datos:** Lectura y escritura en archivos JSON para mantener la información guardada localmente.
+* **Control e Interfaz Gráfica:**
+  * Uso de componentes Tkinter y `ttk.Treeview` para tablas interactivas.
+  * Validaciones de entradas de datos (precios positivos, textos no vacíos, formatos válidos).
+
+
+
+## Estructura del Proyecto
+
+proyecto_restaurante/
+│
+├── datos/                  
+│   ├── productos.json      
+│   └── usuarios.json      
+│
+├── modelos/                
+│   ├── producto.py         
+│   ├── usuario.py         
+│   └── venta.py            
+│
+├── servicios/              
+│   ├── archivo_servicio.py     
+│   └── restaurante_servicio.py 
+│
+├── ui/                     
+│   ├── login_view.py       
+│   └── main_view.py        
+│
+├── main.py                
+└── README.md               
+
+# Arquitectura y Patrones Aplicados
+
+* **Encapsulamiento y Validaciones:** Métodos estáticos @staticmethod dentro de las clases modelo para garantizar que ningún dato corrupto o inválido sea instanciado.
+
+* **Inyección de Dependencias:** El servicio de persistencia ArchivoServicio se inyecta en RestauranteServicio, permitiendo desacoplar el almacenamiento de la lógica del negocio.
+
+* **Model-View Pattern:** La capa de presentación (ui) interactúa únicamente con la capa de servicios (servicios), manteniendo el código limpio y mantenible.
